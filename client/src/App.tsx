@@ -33,9 +33,12 @@ function App() {
     parseInt(entityId.toString()) as EntityIndex
   )
 
+  // console.log('position', position)
+  // console.log('moves', moves)
+
   const handleGridClick = (x: number, y: number) => {
     // Do something when grid is clicked
-    console.log('Player Move')
+    console.log('Player Move To:', x, y)
     move(account, Direction.Up)
   }
 
@@ -74,48 +77,6 @@ function App() {
   return (
     <>
       <div id='phaser-container' className='App'></div>
-    </>
-  )
-
-  return (
-    <>
-      <div id='phaser-container' className='App'></div>
-
-      <button onClick={create}>
-        {isDeploying ? 'deploying burner' : 'create burner'}
-      </button>
-      <div className='card'>
-        select signer:{' '}
-        <select onChange={(e) => select(e.target.value)}>
-          {list().map((account, index) => {
-            return (
-              <option value={account.address} key={index}>
-                {account.address}
-              </option>
-            )
-          })}
-        </select>
-      </div>
-      <div className='card'>
-        <button onClick={() => spawn(account)}>Spawn</button>
-        <div>
-          Moves Left: {moves ? `${moves['remaining']}` : 'Need to Spawn'}
-        </div>
-        <div>
-          Position:{' '}
-          {position ? `${position['x']}, ${position['y']}` : 'Need to Spawn'}
-        </div>
-      </div>
-      <div className='card'>
-        <button onClick={() => move(account, Direction.Up)}>Move Up</button>{' '}
-        <br />
-        <button onClick={() => move(account, Direction.Left)}>Move Left</button>
-        <button onClick={() => move(account, Direction.Right)}>
-          Move Right
-        </button>{' '}
-        <br />
-        <button onClick={() => move(account, Direction.Down)}>Move Down</button>
-      </div>
     </>
   )
 }
