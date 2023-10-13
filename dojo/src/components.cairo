@@ -2,18 +2,68 @@ use array::ArrayTrait;
 use starknet::ContractAddress;
 
 #[derive(Component, Copy, Drop, Serde, SerdeLen)]
-struct Moves {
+struct Attributes {
     #[key]
     player: ContractAddress,
-    remaining: u8,
+    #[key]
+    quest_id: u32,
+    #[key]
+    entity_id: u32,
+    points: u32,
+    str: u32, //Strength
+    dex: u32, //Dexterity
+    con: u32, //Constitution
+    int: u32, //Intelligence
+    wis: u32, //Wisdom
+    cha: u32, //Charisma
+    str_modifier: u32,
+    dex_modifier: u32,
+    con_modifier: u32,
+    int_modifier: u32,
+    wis_modifier: u32,
+    cha_modifier: u32
+}
+
+struct Stats {
+    #[key]
+    player: ContractAddress,
+    #[key]
+    quest_id: u32,
+    #[key]
+    entity_id: u32,
+    ac: u32, // Armor Class
+    damage_dice: u32,
+    hp: u32 // Hit Points
 }
 
 #[derive(Component, Copy, Drop, Serde, SerdeLen)]
 struct Position {
     #[key]
     player: ContractAddress,
+    #[key]
+    quest_id: u32,
+    #[key]
+    entity_id: u32,
     x: u32,
     y: u32
+}
+
+#[derive(Component, Copy, Drop, Serde, SerdeLen)]
+struct Counter {
+    #[key]
+    player: ContractAddress,
+    #[key]
+    quest_id: u32,
+    goblin_count: u32,
+}
+
+#[derive(Component, Copy, Drop, Serde, SerdeLen)]
+struct Quest {
+    #[key]
+    player: ContractAddress,
+    quest_id: u32,
+    // 0 = not started, 1 = started, 2 = completed
+    quest_state: u32,
 }
 
 trait PositionTrait {

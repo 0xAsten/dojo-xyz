@@ -4,8 +4,8 @@ import { Bootstrap } from './scenes/Bootstrap'
 
 const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
-  width: 800,
-  height: 600,
+  width: 1000,
+  height: 800,
   parent: 'phaser-container',
   scene: [Bootstrap],
 }
