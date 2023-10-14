@@ -6,9 +6,10 @@ mod spawn {
     use option::OptionTrait;
     use dojo::world::Context;
 
-    use dojo_examples::components::Position;
-    use dojo_examples::components::Moves;
-    use dojo_examples::constants::OFFSET;
+    use dojo_xyz::components::Attributes;
+    use dojo_xyz::components::Stats;
+    use dojo_xyz::components::Position;
+    use dojo_xyz::components::Quest;
 
     fn modifier(attribute: u32) -> u32 {
         let modifier = (attribute - 8) / 2;
@@ -131,53 +132,76 @@ mod move {
     use dojo::world::Context;
     use debug::PrintTrait;
 
-    use dojo_examples::components::Position;
-    use dojo_examples::components::Moves;
+    use dojo_xyz::components::Attributes;
+    use dojo_xyz::components::Stats;
+    use dojo_xyz::components::Position;
+    use dojo_xyz::components::Quest;
 
-    #[derive(Serde, Drop)]
-    enum Direction {
-        Left: (),
-        Right: (),
-        Up: (),
-        Down: (),
-    }
+    fn execute(ctx: Context, x: u32, y: u32) {
+        let quest = get!(ctx.world, ctx.origin, Quest);
+        let quest_id = quest.quest_id;
 
-    impl DirectionIntoFelt252 of Into<Direction, felt252> {
-        fn into(self: Direction) -> felt252 {
-            match self {
-                Direction::Left(()) => 0,
-                Direction::Right(()) => 1,
-                Direction::Up(()) => 2,
-                Direction::Down(()) => 3,
-            }
-        }
-    }
+        let mut position_player = get!(ctx.world, ctx.origin, quest_id, 0, (Position));
+        let mut position_goblin = get!(ctx.world, ctx.origin, quest_id, 1, (Position));
 
-    fn execute(ctx: Context, direction: Direction) {
-        let (mut position, mut moves) = get!(ctx.world, ctx.origin, (Position, Moves));
-        moves.remaining -= 1;
-        let next = next_position(position, direction);
-        set!(ctx.world, (moves, next));
+        assert(position_player.x != x || position_player.y != y, "No movement");
+        assert(x != position_goblin.x || y != position_goblin.y, "Collision");
+        assert(x < 25, "Out of bounds");
+        assert(y < 20, "Out of bounds");
+        // calculate steps
+        let steps = position_playe.move_steps((x, y));
+        assert(steps <= 5, "Too many steps");
+
+        position_player.x = x;
+        position_player.y = y;
+
+        set!(ctx.world, (position_player));
+
+        // Is Goblin near Player?
+        // if not near, determin Goblin's new x and y that to close in the palyer and totoal steps must less than 4
+        if !position_player.is_neighbor(Some((position_goblin.x, position_goblin.y))) {
+            // move closer
+        } else {
+            // atack
+        }       
+        
         return ();
     }
 
-    fn next_position(mut position: Position, direction: Direction) -> Position {
-        match direction {
-            Direction::Left(()) => {
-                position.x -= 1;
-            },
-            Direction::Right(()) => {
-                position.x += 1;
-            },
-            Direction::Up(()) => {
-                position.y -= 1;
-            },
-            Direction::Down(()) => {
-                position.y += 1;
-            },
-        };
+    fn best_goblin_move(player: Position, goblin: Position, grid_width: u32, grid_height: u32) -> Some(x: u32, y: u32) {        
+        let mut steps = 0;
+        
+        loop {
+            if steps >= 4 {
+                break;
+            }
+            steps += 1;
+            
+            let mut best_position = None;
+            let neighbors = goblin.neighbors(grid_width, grid_height);
+            loop {
+                if neighbors.len() == 0 {
+                    break;
+                }
+                let tmp_position = neighbors.pop_front();
+                if best_position.is_none() {
+                    best_position = tmp_position;
+                } else {
+                    let tmp_steps = player.move_steps(tmp_position);
+                    let best_steps = player.move_steps(best_position);
+                    if tmp_steps < best_steps {
+                        best_position = tmp_position;
+                    }
+                }
+            }   
 
-        position
+            if player.is_neighbor(best_position) {
+                break;
+            }
+        }
+        
+        best_position
     }
+    
 }
 
