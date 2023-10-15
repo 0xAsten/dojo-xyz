@@ -66,7 +66,7 @@ mod spawn {
                     quest_id: quest_id,
                     entity_id: 0,
                     ac: 10 + dex_modifier,
-                    hp: 10 + con_modifier,
+                    hp: 1010 + con_modifier,
                     damage_dice: 4,
                 },
                 Position {
@@ -79,7 +79,7 @@ mod spawn {
                 Quest {
                     player: ctx.origin,
                     quest_id: quest_id,
-                    quest_state: 0,
+                    quest_state: 1,
                 },
             )
         );
@@ -108,7 +108,7 @@ mod spawn {
                     quest_id: quest_id,
                     entity_id: 1,
                     ac: 11,
-                    hp: 11,
+                    hp: 1011,
                     damage_dice: 4,
                 },
                 Position {
@@ -140,6 +140,8 @@ mod move {
     fn execute(ctx: Context, x: u32, y: u32) {
         let quest = get!(ctx.world, ctx.origin, Quest);
         let quest_id = quest.quest_id;
+        let quest_state = quest.quest_state;
+        assert(quest_state == 1, "Quest stats error");
 
         let mut position_player = get!(ctx.world, ctx.origin, quest_id, 0, (Position));
         let mut position_goblin = get!(ctx.world, ctx.origin, quest_id, 1, (Position));
@@ -161,8 +163,33 @@ mod move {
         // if not near, determin Goblin's new x and y that to close in the palyer and totoal steps must less than 4
         if !position_player.is_neighbor(Some((position_goblin.x, position_goblin.y))) {
             // move closer
+            let (bx, by) = best_goblin_move(position_player, position_goblin, 25, 20).unwrap();
+            position_goblin.x = bx;
+            position_goblin.y = by;
+            set!(ctx.world, (position_goblin));
         } else {
             // atack
+            let mut stats_player = get!(ctx.world, ctx.origin, quest_id, 0, (Stats));
+            let stats_goblin = get!(ctx.world, ctx.origin, quest_id, 1, (Stats));
+            let attributes_player = get!(ctx.world, ctx.origin, quest_id, 0, (Attributes));
+            let attributes_goblin = get!(ctx.world, ctx.origin, quest_id, 1, (Attributes));
+
+            let (is_hit, roll) = is_hit(attributes_goblin.str_modifier, stats_player.ac);
+            if is_hit {
+                let damage = roll(stats_goblin.damage_dice) + attributes_goblin.str_modifier;
+                if roll == 20 {
+                    damage += roll(stats_goblin.damage_dice) + attributes_goblin.str_modifier;
+                }
+                stats_player.hp -= damage;
+                set!(ctx.world, (stats_player));
+
+                if stats_player.hp <= 1000 {
+                    // player dead
+                    quest.quest_state = 2;
+                    set!(ctx.world, (quest));
+                    return ();
+                }
+            }
         }       
         
         return ();
@@ -201,6 +228,16 @@ mod move {
         }
         
         best_position
+    }
+
+    fn is_hit(attacker_modifier: u32, defender_ac: u32) -> (bool, u32) {
+        let roll = roll(20);
+        let attack_roll = roll + attacker_modifier;
+        (attack_roll >= defender_ac, roll)
+    }
+
+    fn roll(dice: u32) -> u32 {
+        rand(1, dice)
     }
     
 }
