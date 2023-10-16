@@ -183,15 +183,54 @@ mod tests {
     }
 
     #[test]
-    #[available_gas(3000000000000000)]
-    fn test_move() {
+    #[should_panic]
+    fn test_out_bounds() {
         let palyer = starknet::contract_address_const::<0x0>();
 
         let world = spawn();
 
         let mut move_calldata = array::ArrayTrait::<core::felt252>::new();
-        move_calldata.append(1);
-        move_calldata.append(1);
+        move_calldata.append(25);
+        move_calldata.append(20);
+        world.execute('move_system'.into(), move_calldata);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_exceed_steps() {
+        let palyer = starknet::contract_address_const::<0x0>();
+
+        let world = spawn();
+
+        let mut move_calldata = array::ArrayTrait::<core::felt252>::new();
+        move_calldata.append(6);
+        move_calldata.append(0);
+        world.execute('move_system'.into(), move_calldata);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_not_move() {
+        let palyer = starknet::contract_address_const::<0x0>();
+
+        let world = spawn();
+
+        let mut move_calldata = array::ArrayTrait::<core::felt252>::new();
+        move_calldata.append(0);
+        move_calldata.append(0);
+        world.execute('move_system'.into(), move_calldata);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_collision() {
+        let palyer = starknet::contract_address_const::<0x0>();
+
+        let world = spawn();
+
+        let mut move_calldata = array::ArrayTrait::<core::felt252>::new();
+        move_calldata.append(0);
+        move_calldata.append(5);
         world.execute('move_system'.into(), move_calldata);
 
         let counter = get!(world, palyer, (Counter));
@@ -199,11 +238,66 @@ mod tests {
 
         //get quest
         let position_player = get!(world, (palyer, count, 0), (Position));
-        assert(position_player.x == 1, 'move error');
-        assert(position_player.y == 1, 'move error');
+        assert(position_player.x == 0, 'move error');
+        assert(position_player.y == 5, 'move error');
+
+        let mut move_calldata_2 = array::ArrayTrait::<core::felt252>::new();
+        move_calldata_2.append(5);
+        move_calldata_2.append(5);
+        world.execute('move_system'.into(), move_calldata_2);
+
+        let mut move_calldata_3 = array::ArrayTrait::<core::felt252>::new();
+        move_calldata_3.append(5);
+        move_calldata_3.append(7);
+        world.execute('move_system'.into(), move_calldata_3);
+    }
+
+    #[test]
+    #[available_gas(3000000000000000)]
+    fn test_move() {
+        let palyer = starknet::contract_address_const::<0x0>();
+
+        let world = spawn();
+
+        let mut move_calldata = array::ArrayTrait::<core::felt252>::new();
+        move_calldata.append(0);
+        move_calldata.append(5);
+        world.execute('move_system'.into(), move_calldata);
+
+        let counter = get!(world, palyer, (Counter));
+        let count = counter.count;
+
+        let stats = get!(world, (palyer, count, 0), (Stats));
+        stats.hp.print();
+
+        //get quest
+        let position_player = get!(world, (palyer, count, 0), (Position));
+        assert(position_player.x == 0, 'move error');
+        assert(position_player.y == 5, 'move error');
 
         let position_goblin = get!(world, (palyer, count, 1), (Position));
         position_goblin.x.print();
         position_goblin.y.print();
+
+        let mut move_calldata_2 = array::ArrayTrait::<core::felt252>::new();
+        move_calldata_2.append(5);
+        move_calldata_2.append(5);
+        world.execute('move_system'.into(), move_calldata_2);
+
+        let position_goblin = get!(world, (palyer, count, 1), (Position));
+        position_goblin.x.print();
+        position_goblin.y.print();
+
+        let mut move_calldata_3 = array::ArrayTrait::<core::felt252>::new();
+        move_calldata_3.append(5);
+        move_calldata_3.append(8);
+        world.execute('move_system'.into(), move_calldata_3);
+
+        let position_goblin = get!(world, (palyer, count, 1), (Position));
+        position_goblin.x.print();
+        position_goblin.y.print();
+
+        let stats = get!(world, (palyer, count, 0), (Stats));
+        stats.hp.print();
     }
 }
