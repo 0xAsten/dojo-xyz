@@ -1,5 +1,6 @@
 #[system]
 mod move_system {
+    use core::option::OptionTrait;
     use array::ArrayTrait;
     use box::BoxTrait;
     use traits::Into;
@@ -7,11 +8,14 @@ mod move_system {
     use debug::PrintTrait;
     use starknet::ContractAddress;
 
-    use dojo_xyz::components::{Attributes, Position, Stats, Quest, PositionTrait};
+    use dojo_xyz::components::{Attributes, Position, Stats, Quest, PositionTrait, Counter};
 
     fn execute(ctx: Context, x: u32, y: u32) {
-        let mut quest = get!(ctx.world, ctx.origin, (Quest));
-        let quest_id = quest.quest_id;
+        let counter = get!(ctx.world, ctx.origin, (Counter));
+        let count = counter.count;
+
+        let mut quest = get!(ctx.world, (ctx.origin, count), (Quest));
+        let quest_id = count;
         let quest_state = quest.quest_state;
         assert(quest_state == 1, 'Quest stats error');
 
@@ -78,27 +82,31 @@ mod move_system {
         player: Position, goblin: Position, grid_width: u32, grid_height: u32
     ) -> Option<(u32, u32)> {
         let mut steps: u32 = 0;
-        let mut best_position: Option<(u32, u32)> = Option::None(());
+        let mut best_position: Option<(u32, u32)> = Option::Some((goblin.x, goblin.y));
         loop {
             if steps >= 4 {
                 break;
             }
             steps += 1;
 
-            let mut neighbors: Array<(u32, u32)> = goblin.neighbors(grid_width, grid_height);
+            let (x, y) = best_position.unwrap();
+            let mut neighbors: Array<(u32, u32)> = PositionTrait::neighbors_xy(
+                x, y, grid_width, grid_height
+            );
+
+            let mut tmp_position: Option<(u32, u32)> = Option::None(());
             loop {
                 if neighbors.len() == 0 {
                     break;
                 };
-                let tmp_position = ArrayTrait::pop_front(ref neighbors);
-                if best_position == Option::None(()) {
+                tmp_position = ArrayTrait::pop_front(ref neighbors);
+                let (xt, yt) = tmp_position.unwrap();
+
+                let tmp_steps = player.move_steps(tmp_position);
+                let best_steps = player.move_steps(best_position);
+
+                if tmp_steps < best_steps {
                     best_position = tmp_position;
-                } else {
-                    let tmp_steps = player.move_steps(tmp_position);
-                    let best_steps = player.move_steps(best_position);
-                    if tmp_steps < best_steps {
-                        best_position = tmp_position;
-                    }
                 };
             };
 
@@ -118,5 +126,84 @@ mod move_system {
 
     fn roll(dice: u32) -> u32 {
         dice
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use starknet::ContractAddress;
+    use dojo::test_utils::spawn_test_world;
+    use dojo_xyz::components::{
+        Attributes, attributes, Position, position, Stats, stats, Quest, quest, Counter, counter
+    };
+    use super::move_system;
+    use dojo_xyz::systems::spawn_system;
+    use debug::PrintTrait;
+    use array::ArrayTrait;
+    use core::traits::Into;
+    use dojo::world::IWorldDispatcherTrait;
+    use dojo::world::IWorldDispatcher;
+    use core::array::SpanTrait;
+
+    #[test]
+    #[available_gas(3000000000000000)]
+    fn spawn() -> IWorldDispatcher {
+        let palyer = starknet::contract_address_const::<0x0>();
+
+        // components
+        let mut components = array::ArrayTrait::new();
+        components.append(attributes::TEST_CLASS_HASH);
+        components.append(position::TEST_CLASS_HASH);
+        components.append(stats::TEST_CLASS_HASH);
+        components.append(quest::TEST_CLASS_HASH);
+        components.append(counter::TEST_CLASS_HASH);
+
+        //systems
+        let mut systems = ArrayTrait::new();
+        systems.append(spawn_system::TEST_CLASS_HASH);
+        systems.append(move_system::TEST_CLASS_HASH);
+        let world = spawn_test_world(components, systems);
+
+        let mut calldata = ArrayTrait::<core::felt252>::new();
+        let str = 2;
+        let dex = 2;
+        let con = 2;
+        let int = 1;
+        let wis = 0;
+        let cha = 0;
+        calldata.append(str.into());
+        calldata.append(dex.into());
+        calldata.append(con.into());
+        calldata.append(int.into());
+        calldata.append(wis.into());
+        calldata.append(cha.into());
+        world.execute('spawn_system'.into(), calldata);
+
+        world
+    }
+
+    #[test]
+    #[available_gas(3000000000000000)]
+    fn test_move() {
+        let palyer = starknet::contract_address_const::<0x0>();
+
+        let world = spawn();
+
+        let mut move_calldata = array::ArrayTrait::<core::felt252>::new();
+        move_calldata.append(1);
+        move_calldata.append(1);
+        world.execute('move_system'.into(), move_calldata);
+
+        let counter = get!(world, palyer, (Counter));
+        let count = counter.count;
+
+        //get quest
+        let position_player = get!(world, (palyer, count, 0), (Position));
+        assert(position_player.x == 1, 'move error');
+        assert(position_player.y == 1, 'move error');
+
+        let position_goblin = get!(world, (palyer, count, 1), (Position));
+        position_goblin.x.print();
+        position_goblin.y.print();
     }
 }

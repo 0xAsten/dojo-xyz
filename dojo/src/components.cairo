@@ -92,6 +92,7 @@ trait PositionTrait {
     fn is_neighbor(self: Position, b: Option<(u32, u32)>) -> bool;
     fn move_steps(self: Position, b: Option<(u32, u32)>) -> u32;
     fn neighbors(self: Position, grid_width: u32, grid_height: u32) -> Array<(u32, u32)>;
+    fn neighbors_xy(x: u32, y: u32, grid_width: u32, grid_height: u32) -> Array<(u32, u32)>;
 }
 
 impl PositionImpl of PositionTrait {
@@ -136,34 +137,28 @@ impl PositionImpl of PositionTrait {
     }
 
     fn move_steps(self: Position, b: Option<(u32, u32)>) -> u32 {
-        match b {
-            Option::Some((
-                x, y
-            )) => {
-                let steps_x = {
-                    if self.x > x {
-                        self.x - x
-                    } else if self.x > x {
-                        x - self.x
-                    } else {
-                        0
-                    }
-                };
-                let steps_y = {
-                    if self.y > y {
-                        self.y - y
-                    } else if self.y > y {
-                        y - self.y
-                    } else {
-                        0
-                    }
-                };
-                let steps = steps_x + steps_y;
+        let (x, y) = b.unwrap();
+        let steps_x = {
+            if self.x > x {
+                self.x - x
+            } else if self.x < x {
+                x - self.x
+            } else {
+                0
+            }
+        };
+        let steps_y = {
+            if self.y > y {
+                self.y - y
+            } else if self.y < y {
+                y - self.y
+            } else {
+                0
+            }
+        };
+        let steps = steps_x + steps_y;
 
-                steps
-            },
-            Option::None(_) => 9999
-        }
+        steps
     }
 
     fn neighbors(self: Position, grid_width: usize, grid_height: usize) -> Array<(u32, u32)> {
@@ -180,6 +175,25 @@ impl PositionImpl of PositionTrait {
         }
         if self.y < grid_height - 1 {
             neighbors.append((self.x, self.y + 1));
+        }
+
+        neighbors
+    }
+
+    fn neighbors_xy(x: u32, y: u32, grid_width: usize, grid_height: usize) -> Array<(u32, u32)> {
+        let mut neighbors = ArrayTrait::<(u32, u32)>::new();
+
+        if x > 0 {
+            neighbors.append((x - 1, y));
+        }
+        if x < grid_width - 1 {
+            neighbors.append((x + 1, y));
+        }
+        if y > 0 {
+            neighbors.append((x, y - 1));
+        }
+        if y < grid_height - 1 {
+            neighbors.append((x, y + 1));
         }
 
         neighbors

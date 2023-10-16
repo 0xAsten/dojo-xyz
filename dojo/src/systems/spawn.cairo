@@ -169,5 +169,13 @@ mod tests {
 
         assert(quest.quest_state == 1, 'quest state is incorrect');
         assert(quest.quest_id == 1, 'quest id is incorrect');
+
+        let position_player = get!(world, (palyer, count, 0), (Position));
+        let position_goblin = get!(world, (palyer, count, 1), (Position));
+
+        assert(position_player.x == 0, 'player x is incorrect');
+        assert(position_player.y == 0, 'player y is incorrect');
+        assert(position_goblin.x == 10, 'goblin x is incorrect');
+        assert(position_goblin.y == 10, 'goblin y is incorrect');
     }
 }
