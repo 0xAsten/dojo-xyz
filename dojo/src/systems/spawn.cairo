@@ -6,8 +6,9 @@ mod spawn_system {
     use option::OptionTrait;
     use dojo::world::Context;
     use starknet::ContractAddress;
+    use debug::PrintTrait;
 
-    use dojo_xyz::components::{Attributes, Position, Stats, Quest};
+    use dojo_xyz::components::{Attributes, Position, Stats, Quest, Counter};
 
     fn modifier(attribute: u32) -> u32 {
         let modifier = (attribute - 8) / 2;
@@ -16,15 +17,8 @@ mod spawn_system {
     }
 
     fn execute(ctx: Context, str: u32, dex: u32, con: u32, int: u32, wis: u32, cha: u32) {
-        let quest = get!(ctx.world, ctx.origin, (Quest));
-
-        let quest_state = quest.quest_state;
-        assert(quest_state == 0, "Quest already started");
-
-        let quest_id = quest.quest_id + 1; 
-        
         let total = str + dex + con + int + wis + cha;
-        assert(total <= 7, "Points too large");
+        assert(total <= 7, 'Points too large');
 
         let str = 8 + str;
         let dex = 8 + dex;
@@ -40,52 +34,54 @@ mod spawn_system {
         let wis_modifier = modifier(wis);
         let cha_modifier = modifier(cha);
 
-        set!(
-            ctx.world,
-            (   Attributes {
-                    player: ctx.origin,
-                    quest_id: quest_id,
-                    entity_id: 0,
-                    points: 7 - total,
-                    str: str,
-                    dex: dex,
-                    con: con,
-                    int: int,
-                    wis: wis,
-                    cha: cha,
-                    str_modifier: str_modifier,
-                    dex_modifier: dex_modifier,
-                    con_modifier: con_modifier,
-                    int_modifier: int_modifier,
-                    wis_modifier: wis_modifier,
-                    cha_modifier: cha_modifier,
-                },
-                Stats {
-                    player: ctx.origin,
-                    quest_id: quest_id,
-                    entity_id: 0,
-                    ac: 10 + dex_modifier,
-                    hp: 1010 + con_modifier,
-                    damage_dice: 4,
-                },
-                Position {
-                    player: ctx.origin, 
-                    quest_id: quest_id,
-                    entity_id: 0,
-                    x: 0, 
-                    y: 0
-                },
-                Quest {
-                    player: ctx.origin,
-                    quest_id: quest_id,
-                    quest_state: 1,
-                },
-            )
-        );
+        let mut counter = get!(ctx.world, ctx.origin, (Counter));
+        let quest_id = counter.count + 1;
+        counter.count = quest_id;
+        counter.player = ctx.origin;
 
         set!(
             ctx.world,
-            (   Attributes {
+            (Attributes {
+                player: ctx.origin,
+                quest_id: quest_id,
+                entity_id: 0,
+                points: 7 - total,
+                str: str,
+                dex: dex,
+                con: con,
+                int: int,
+                wis: wis,
+                cha: cha,
+                str_modifier: str_modifier,
+                dex_modifier: dex_modifier,
+                con_modifier: con_modifier,
+                int_modifier: int_modifier,
+                wis_modifier: wis_modifier,
+                cha_modifier: cha_modifier,
+            })
+        );
+        set!(
+            ctx.world,
+            (Stats {
+                player: ctx.origin,
+                quest_id: quest_id,
+                entity_id: 0,
+                ac: 10 + dex_modifier,
+                hp: 1010 + con_modifier,
+                damage_dice: 4,
+            })
+        );
+        set!(
+            ctx.world,
+            (Position { player: ctx.origin, quest_id: quest_id, entity_id: 0, x: 0, y: 0 })
+        );
+        set!(ctx.world, (Quest { player: ctx.origin, quest_id: quest_id, quest_state: 1 }));
+        set!(ctx.world, (counter));
+
+        set!(
+            ctx.world,
+            (
+                Attributes {
                     player: ctx.origin,
                     quest_id: quest_id,
                     entity_id: 1,
@@ -111,13 +107,7 @@ mod spawn_system {
                     hp: 1011,
                     damage_dice: 4,
                 },
-                Position {
-                    player: ctx.origin, 
-                    quest_id: quest_id,
-                    entity_id: 1,
-                    x: 10, 
-                    y: 10
-                },
+                Position { player: ctx.origin, quest_id: quest_id, entity_id: 1, x: 10, y: 10 },
             )
         );
         return ();
@@ -128,9 +118,11 @@ mod spawn_system {
 mod tests {
     use starknet::ContractAddress;
     use dojo::test_utils::spawn_test_world;
-    use dojo_xyz::components::{Attributes, attributes, Position, position, Stats, stats, Quest, quest};
+    use dojo_xyz::components::{
+        Attributes, attributes, Position, position, Stats, stats, Quest, quest, Counter, counter
+    };
     use super::spawn_system;
-
+    use debug::PrintTrait;
     use array::ArrayTrait;
     use core::traits::Into;
     use dojo::world::IWorldDispatcherTrait;
@@ -139,7 +131,7 @@ mod tests {
     #[test]
     #[available_gas(3000000000000000)]
     fn test_initiate() {
-        let palyer = starknet::contract_address_const::<0x01>();
+        let palyer = starknet::contract_address_const::<0x0>();
 
         // components
         let mut components = array::ArrayTrait::new();
@@ -147,6 +139,7 @@ mod tests {
         components.append(position::TEST_CLASS_HASH);
         components.append(stats::TEST_CLASS_HASH);
         components.append(quest::TEST_CLASS_HASH);
+        components.append(counter::TEST_CLASS_HASH);
 
         //systems
         let mut systems = ArrayTrait::new();
@@ -165,11 +158,15 @@ mod tests {
         calldata.append(con.into());
         calldata.append(int.into());
         calldata.append(wis.into());
-        calldata.append(cha.into()); 
-        world.execute('spawn'.into(), calldata);
+        calldata.append(cha.into());
+        world.execute('spawn_system'.into(), calldata);
+
+        let counter = get!(world, palyer, (Counter));
+        let count = counter.count;
 
         //get quest
-        let quest = get!(world, (palyer), (Quest));
+        let quest = get!(world, (palyer, count), (Quest));
+
         assert(quest.quest_state == 1, 'quest state is incorrect');
         assert(quest.quest_id == 1, 'quest id is incorrect');
     }

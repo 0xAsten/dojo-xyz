@@ -13,18 +13,18 @@ mod move_system {
         let mut quest = get!(ctx.world, ctx.origin, (Quest));
         let quest_id = quest.quest_id;
         let quest_state = quest.quest_state;
-        assert(quest_state == 1, "Quest stats error");
+        assert(quest_state == 1, 'Quest stats error');
 
         let mut position_player = get!(ctx.world, (ctx.origin, quest_id, 0), (Position));
         let mut position_goblin = get!(ctx.world, (ctx.origin, quest_id, 1), (Position));
 
-        assert(position_player.x != x || position_player.y != y, "No movement");
-        assert(x != position_goblin.x || y != position_goblin.y, "Collision");
-        assert(x < 25, "Out of bounds");
-        assert(y < 20, "Out of bounds");
+        assert(position_player.x != x || position_player.y != y, 'No movement');
+        assert(x != position_goblin.x || y != position_goblin.y, 'Collision');
+        assert(x < 25, 'Out of bounds');
+        assert(y < 20, 'Out of bounds');
         // calculate steps
         let steps = position_player.move_steps(Option::Some((x, y)));
-        assert(steps <= 5, "Too many steps");
+        assert(steps <= 5, 'Too many steps');
 
         position_player.x = x;
         position_player.y = y;
@@ -37,7 +37,9 @@ mod move_system {
             // move closer
             let new_position = best_goblin_move(position_player, position_goblin, 25, 20);
             match new_position {
-                Option::Some((bx, by)) => {
+                Option::Some((
+                    bx, by
+                )) => {
                     position_goblin.x = bx;
                     position_goblin.y = by;
                     set!(ctx.world, (position_goblin));
@@ -67,12 +69,14 @@ mod move_system {
                     return ();
                 }
             }
-        }       
-        
+        }
+
         return ();
     }
 
-    fn best_goblin_move(player: Position, goblin: Position, grid_width: u32, grid_height: u32) -> Option<(u32, u32)> {        
+    fn best_goblin_move(
+        player: Position, goblin: Position, grid_width: u32, grid_height: u32
+    ) -> Option<(u32, u32)> {
         let mut steps: u32 = 0;
         let mut best_position: Option<(u32, u32)> = Option::None(());
         loop {
@@ -80,7 +84,7 @@ mod move_system {
                 break;
             }
             steps += 1;
-            
+
             let mut neighbors: Array<(u32, u32)> = goblin.neighbors(grid_width, grid_height);
             loop {
                 if neighbors.len() == 0 {
@@ -96,13 +100,13 @@ mod move_system {
                         best_position = tmp_position;
                     }
                 };
-            };   
+            };
 
             if player.is_neighbor(best_position) {
                 break;
             };
         };
-        
+
         best_position
     }
 
@@ -115,5 +119,4 @@ mod move_system {
     fn roll(dice: u32) -> u32 {
         dice
     }
-    
 }

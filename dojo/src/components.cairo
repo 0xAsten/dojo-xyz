@@ -53,9 +53,7 @@ struct Position {
 struct Counter {
     #[key]
     player: ContractAddress,
-    #[key]
-    quest_id: u32,
-    goblin_count: u32,
+    count: u32,
 }
 
 // #[derive(Serde, Drop, Copy, PartialEq)]
@@ -69,6 +67,7 @@ struct Counter {
 struct Quest {
     #[key]
     player: ContractAddress,
+    #[key]
     quest_id: u32,
     // 0 - GameInit, 1 - GameRunning, 2 - GameOver
     quest_state: u32,
@@ -111,7 +110,9 @@ impl PositionImpl of PositionTrait {
         let mut near = false;
 
         match b {
-            Option::Some((x, y)) => {
+            Option::Some((
+                x, y
+            )) => {
                 if self.x == x {
                     if self.y == y + 1 {
                         near = true;
@@ -136,7 +137,9 @@ impl PositionImpl of PositionTrait {
 
     fn move_steps(self: Position, b: Option<(u32, u32)>) -> u32 {
         match b {
-            Option::Some((x, y)) => {
+            Option::Some((
+                x, y
+            )) => {
                 let steps_x = {
                     if self.x > x {
                         self.x - x
@@ -165,7 +168,7 @@ impl PositionImpl of PositionTrait {
 
     fn neighbors(self: Position, grid_width: usize, grid_height: usize) -> Array<(u32, u32)> {
         let mut neighbors = ArrayTrait::<(u32, u32)>::new();
-        
+
         if self.x > 0 {
             neighbors.append((self.x - 1, self.y));
         }
@@ -178,7 +181,7 @@ impl PositionImpl of PositionTrait {
         if self.y < grid_height - 1 {
             neighbors.append((self.x, self.y + 1));
         }
-        
+
         neighbors
     }
 }
