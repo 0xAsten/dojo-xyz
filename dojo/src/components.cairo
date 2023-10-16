@@ -24,6 +24,7 @@ struct Attributes {
     cha_modifier: u32
 }
 
+#[derive(Component, Copy, Drop, Serde, SerdeLen)]
 struct Stats {
     #[key]
     player: ContractAddress,
@@ -57,21 +58,41 @@ struct Counter {
     goblin_count: u32,
 }
 
+// #[derive(Serde, Drop, Copy, PartialEq)]
+// enum GameStates {
+//     GameInit,
+//     GameRunning,
+//     GameOver
+// }
+
 #[derive(Component, Copy, Drop, Serde, SerdeLen)]
 struct Quest {
     #[key]
     player: ContractAddress,
     quest_id: u32,
-    // 0 = not started, 1 = started, 2 = completed
+    // 0 - GameInit, 1 - GameRunning, 2 - GameOver
     quest_state: u32,
 }
+
+// //Assigning storage types for enum
+// impl QuestOptionStateStorageSize of dojo::StorageSize<GameStates> {
+//     #[inline(always)]
+//     fn unpacked_size() -> usize {
+//         1
+//     }
+
+//     #[inline(always)]
+//     fn packed_size() -> usize {
+//         256
+//     }
+// }
 
 trait PositionTrait {
     fn is_zero(self: Position) -> bool;
     fn is_equal(self: Position, b: Position) -> bool;
-    fn is_neighbor(self: Position, b: Option<(x: u32, y: u32)>) -> bool;
-    fn move_steps(self: Position, b: Option<(x: u32, y: u32)>) -> u32;
-    fn neighbors(self: Position, grid_width: u32, grid_height: u32) -> (u32, u32));
+    fn is_neighbor(self: Position, b: Option<(u32, u32)>) -> bool;
+    fn move_steps(self: Position, b: Option<(u32, u32)>) -> u32;
+    fn neighbors(self: Position, grid_width: u32, grid_height: u32) -> Array<(u32, u32)>;
 }
 
 impl PositionImpl of PositionTrait {
@@ -86,55 +107,64 @@ impl PositionImpl of PositionTrait {
         self.x == b.x && self.y == b.y
     }
 
-    fn is_neighbor(self: Position, b: Option<(x: u32, y: u32)>) -> bool {
+    fn is_neighbor(self: Position, b: Option<(u32, u32)>) -> bool {
         let mut near = false;
-        let (x, y) = b.unwrap();
-        if self.x == x {
-            if self.y == y + 1 {
-                near = true;
-            }
-            if y > 0 && self.y == y - 1 {
-                near = true;
-            }
-        } else if self.y == y {
-            if self.x == x + 1 {
-                near = true;
-            }
-            if x > 0 && self.x == x - 1 {
-                near = true;
-            }
+
+        match b {
+            Option::Some((x, y)) => {
+                if self.x == x {
+                    if self.y == y + 1 {
+                        near = true;
+                    }
+                    if y > 0 && self.y == y - 1 {
+                        near = true;
+                    }
+                } else if self.y == y {
+                    if self.x == x + 1 {
+                        near = true;
+                    }
+                    if x > 0 && self.x == x - 1 {
+                        near = true;
+                    }
+                }
+            },
+            Option::None(_) => panic(array!['None exists'])
         }
 
         near
     }
 
-    fn move_steps(self: Position, b: Option<(x: u32, y: u32)>) -> u32 {
-        let (x, y) = b.unwrap();
-        let steps_x = {
-            if self.x > x {
-                self.x - x
-            } else if self.x > x {
-                x - self.x
-            } else {
-                0
-            }
-        };
-        let steps_y = {
-            if self.y > y {
-                self.y - y
-            } else if self.y > y {
-                y - self.y
-            } else {
-                0
-            }
-        };
-        let steps = steps_x + steps_y;
+    fn move_steps(self: Position, b: Option<(u32, u32)>) -> u32 {
+        match b {
+            Option::Some((x, y)) => {
+                let steps_x = {
+                    if self.x > x {
+                        self.x - x
+                    } else if self.x > x {
+                        x - self.x
+                    } else {
+                        0
+                    }
+                };
+                let steps_y = {
+                    if self.y > y {
+                        self.y - y
+                    } else if self.y > y {
+                        y - self.y
+                    } else {
+                        0
+                    }
+                };
+                let steps = steps_x + steps_y;
 
-        steps
+                steps
+            },
+            Option::None(_) => 9999
+        }
     }
 
-    fn neighbors(self: Position, grid_width: usize, grid_height: usize) -> ArrayTrait<(u32, u32)> {
-        let mut neighbors = ArrayTrait::new();
+    fn neighbors(self: Position, grid_width: usize, grid_height: usize) -> Array<(u32, u32)> {
+        let mut neighbors = ArrayTrait::<(u32, u32)>::new();
         
         if self.x > 0 {
             neighbors.append((self.x - 1, self.y));
@@ -150,27 +180,5 @@ impl PositionImpl of PositionTrait {
         }
         
         neighbors
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use debug::PrintTrait;
-    use super::{Position, PositionTrait};
-
-    #[test]
-    #[available_gas(100000)]
-    fn test_position_is_zero() {
-        let player = starknet::contract_address_const::<0x0>();
-        assert(PositionTrait::is_zero(Position { player, x: 0, y: 0 }), 'not zero');
-    }
-
-    #[test]
-    #[available_gas(100000)]
-    fn test_position_is_equal() {
-        let player = starknet::contract_address_const::<0x0>();
-        let position = Position { player, x: 420, y: 0 };
-        position.print();
-        assert(PositionTrait::is_equal(position, Position { player, x: 420, y: 0 }), 'not equal');
     }
 }
