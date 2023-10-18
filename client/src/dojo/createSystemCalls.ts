@@ -30,12 +30,12 @@ export function createSystemCalls(
     //   value: { remaining: 100 },
     // })
 
-    const str = 10
-    const dex = 10
-    const con = 10
-    const int = 8
-    const wis = 8
-    const cha = 8
+    const str = 2
+    const dex = 2
+    const con = 2
+    const int = 0
+    const wis = 0
+    const cha = 0
 
     try {
       const tx = await execute(signer, 'spawn_system', [

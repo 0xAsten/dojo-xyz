@@ -4,7 +4,7 @@ import { useComponentValue } from '@dojoengine/react'
 import { EntityIndex, setComponent } from '@latticexyz/recs'
 import { useEffect } from 'react'
 import { getFirstComponentByType } from './utils'
-import { Moves, Position } from './generated/graphql'
+import { Attributes, Position, Counter } from './generated/graphql'
 import './xyz/PhaserGame'
 import Phaser from 'phaser'
 import config from './xyz/PhaserGame'
@@ -12,8 +12,8 @@ import config from './xyz/PhaserGame'
 function App() {
   const {
     setup: {
-      systemCalls: { spawn, move },
-      components: { Moves, Position },
+      systemCalls: { spawn },
+      components: { Attributes, Counter },
       network: { graphSdk, call },
     },
     account: { create, list, select, account, isDeploying },
@@ -21,24 +21,20 @@ function App() {
 
   // entity id - this example uses the account address as the entity id
   const entityId = account.address
+  console.log(entityId)
 
   // get current component values
-  const position = useComponentValue(
-    Position,
-    parseInt(entityId.toString()) as EntityIndex
-  )
-  const moves = useComponentValue(
-    Moves,
+  const counter = useComponentValue(
+    Counter,
     parseInt(entityId.toString()) as EntityIndex
   )
 
-  // console.log('position', position)
-  // console.log('moves', moves)
+  // console.log('Counter', counter)
 
   const handleGridClick = (x: number, y: number) => {
     // Do something when grid is clicked
     console.log('Player Move To:', x, y)
-    move(account, Direction.Up)
+    spawn(account)
   }
 
   useEffect(() => {
@@ -46,24 +42,22 @@ function App() {
 
     const fetchData = async () => {
       const { data } = await graphSdk.getEntities()
+      console.log('data', data)
 
       if (data) {
-        let remaining = getFirstComponentByType(
+        let counter = getFirstComponentByType(
           data.entities?.edges,
-          'Moves'
-        ) as Moves
-        let position = getFirstComponentByType(
-          data.entities?.edges,
-          'Position'
-        ) as Position
+          'Counter'
+        ) as Counter
 
-        setComponent(Moves, parseInt(entityId.toString()) as EntityIndex, {
-          remaining: remaining.remaining,
-        })
-        setComponent(Position, parseInt(entityId.toString()) as EntityIndex, {
-          x: position.x,
-          y: position.y,
-        })
+        console.log('Counter', counter.count)
+        // setComponent(Moves, parseInt(entityId.toString()) as EntityIndex, {
+        //   remaining: remaining.remaining,
+        // })
+        // setComponent(Position, parseInt(entityId.toString()) as EntityIndex, {
+        //   x: position.x,
+        //   y: position.y,
+        // })
       }
     }
     fetchData()
@@ -76,6 +70,7 @@ function App() {
 
   return (
     <>
+      <div>{counter?.count}</div>
       <div id='phaser-container' className='App'></div>
     </>
   )

@@ -648,7 +648,7 @@ export type SystemEdge = {
 export type GetEntitiesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetEntitiesQuery = { __typename?: 'Query', entities?: { __typename?: 'EntityConnection', edges?: Array<{ __typename?: 'EntityEdge', node?: { __typename?: 'Entity', keys?: Array<string | null> | null, components?: Array<{ __typename: 'Attributes', points?: any | null, str?: any | null, dex?: any | null, con?: any | null, int?: any | null, wis?: any | null, cha?: any | null, str_modifier?: any | null, dex_modifier?: any | null, con_modifier?: any | null, int_modifier?: any | null, wis_modifier?: any | null, cha_modifier?: any | null } | { __typename: 'Counter' } | { __typename: 'Position' } | { __typename: 'Quest' } | { __typename: 'Stats' } | null> | null } | null } | null> | null } | null };
+export type GetEntitiesQuery = { __typename?: 'Query', entities?: { __typename?: 'EntityConnection', edges?: Array<{ __typename?: 'EntityEdge', node?: { __typename?: 'Entity', keys?: Array<string | null> | null, components?: Array<{ __typename: 'Attributes', points?: any | null, str?: any | null, dex?: any | null, con?: any | null, int?: any | null, wis?: any | null, cha?: any | null, str_modifier?: any | null, dex_modifier?: any | null, con_modifier?: any | null, int_modifier?: any | null, wis_modifier?: any | null, cha_modifier?: any | null } | { __typename: 'Counter', count?: any | null } | { __typename: 'Position', x?: any | null, y?: any | null } | { __typename: 'Quest', quest_state?: any | null } | { __typename: 'Stats', ac?: any | null, damage_dice?: any | null, hp?: any | null } | null> | null } | null } | null> | null } | null };
 
 
 export const GetEntitiesDocument = gql`
@@ -673,6 +673,21 @@ export const GetEntitiesDocument = gql`
             int_modifier
             wis_modifier
             cha_modifier
+          }
+          ... on Stats {
+            ac
+            damage_dice
+            hp
+          }
+          ... on Position {
+            x
+            y
+          }
+          ... on Counter {
+            count
+          }
+          ... on Quest {
+            quest_state
           }
         }
       }

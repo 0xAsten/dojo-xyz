@@ -20,6 +20,21 @@ query getEntities {
             wis_modifier
             cha_modifier
           }
+          ... on Stats {
+            ac
+            damage_dice
+            hp
+          }
+          ... on Position {
+            x
+            y
+          }
+          ... on Counter {
+            count
+          }
+          ... on Quest {
+            quest_state
+          }
         }
       }
     }
