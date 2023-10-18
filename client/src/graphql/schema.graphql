@@ -5,12 +5,20 @@ query getEntities {
         keys
         components {
           __typename
-          ... on Moves {
-            remaining
-          }
-          ... on Position {
-            x
-            y
+          ... on Attributes {
+            points
+            str
+            dex
+            con
+            int
+            wis
+            cha
+            str_modifier
+            dex_modifier
+            con_modifier
+            int_modifier
+            wis_modifier
+            cha_modifier
           }
         }
       }
