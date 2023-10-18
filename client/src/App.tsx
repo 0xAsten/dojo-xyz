@@ -71,6 +71,7 @@ function App() {
 
     const game = new Phaser.Game(config)
     game.scene.start('bootstrap', { onGridClick: handleGridClick })
+
     return () => game.destroy(true)
   }, [account.address])
 

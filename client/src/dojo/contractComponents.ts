@@ -4,12 +4,46 @@ import { defineComponent, Type as RecsType, World } from "@latticexyz/recs";
 
 export function defineContractComponents(world: World) {
   return {
-    Moves: (() => {
-      const name = "Moves";
+    Attributes: (() => {
+      const name = "Attributes";
       return defineComponent(
         world,
         {
-          remaining: RecsType.Number,
+          player: RecsType.Number,
+          quest_id: RecsType.Number,
+          entity_id: RecsType.Number,
+          points: RecsType.Number,
+          str: RecsType.Number,
+          dex: RecsType.Number,
+          con: RecsType.Number,
+          int: RecsType.Number,
+          wis: RecsType.Number,
+          cha: RecsType.Number,
+          str_modifier: RecsType.Number,
+          dex_modifier: RecsType.Number,
+          con_modifier: RecsType.Number,
+          int_modifier: RecsType.Number,
+          wis_modifier: RecsType.Number,
+          cha_modifier: RecsType.Number,
+        },
+        {
+          metadata: {
+            name: name,
+          },
+        }
+      );
+    })(),
+    Stats: (() => {
+      const name = "Stats";
+      return defineComponent(
+        world,
+        {
+          player: RecsType.Number,
+          quest_id: RecsType.Number,
+          entity_id: RecsType.Number,
+          ac: RecsType.Number,
+          damage_dice: RecsType.Number,
+          hp: RecsType.Number,
         },
         {
           metadata: {
@@ -23,6 +57,9 @@ export function defineContractComponents(world: World) {
       return defineComponent(
         world,
         {
+          player: RecsType.Number,
+          quest_id: RecsType.Number,
+          entity_id: RecsType.Number,
           x: RecsType.Number,
           y: RecsType.Number,
         },
@@ -33,12 +70,13 @@ export function defineContractComponents(world: World) {
         }
       );
     })(),
-    AuthStatus: (() => {
-      const name = "AuthStatus";
+    Counter: (() => {
+      const name = "Counter";
       return defineComponent(
         world,
         {
-          is_authorized: RecsType.Boolean,
+          player: RecsType.Number,
+          count: RecsType.Number,
         },
         {
           metadata: {
@@ -47,12 +85,14 @@ export function defineContractComponents(world: World) {
         }
       );
     })(),
-    AuthRole: (() => {
-      const name = "AuthRole";
+    Quest: (() => {
+      const name = "Quest";
       return defineComponent(
         world,
         {
-          id: RecsType.Number,
+          player: RecsType.Number,
+          quest_id: RecsType.Number,
+          quest_state: RecsType.Number,
         },
         {
           metadata: {
