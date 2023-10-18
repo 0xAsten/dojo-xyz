@@ -12,10 +12,10 @@
     "components": "npx @dojoengine/core ../dojo/target/dev/manifest.json src/dojo/contractComponents.ts"
   },
   "dependencies": {
-    "@dojoengine/core": "^0.0.17",
-    "@dojoengine/create-burner": "^0.0.15",
-    "@dojoengine/react": "^0.0.3",
+    "@dojoengine/core": "^0.1.26",
+    "@dojoengine/create-burner": "^0.1.27",
     "@dojoengine/utils": "^0.1.27",
+    "@latticexyz/react": "^1.43.0",
     "@latticexyz/recs": "^1.43.0",
     "@latticexyz/utils": "^1.43.0",
     "easystarjs": "^0.4.4",

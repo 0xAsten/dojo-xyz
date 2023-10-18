@@ -1,0 +1,27 @@
+query getAttributesForPlayer(
+  $player: String!
+  $questId: Int!
+  $entityId: Int!
+) {
+  attributesComponents(
+    where: { player: $player, quest_id: $questId, entity_id: $entityId }
+  ) {
+    edges {
+      node {
+        points
+        str
+        dex
+        con
+        int
+        wis
+        cha
+        str_modifier
+        dex_modifier
+        con_modifier
+        int_modifier
+        wis_modifier
+        cha_modifier
+      }
+    }
+  }
+}

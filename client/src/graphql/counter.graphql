@@ -1,0 +1,10 @@
+query getCounterForPlayer($player: String!) {
+  counterComponents(where: { player: $player }) {
+    edges {
+      node {
+        player
+        count
+      }
+    }
+  }
+}

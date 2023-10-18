@@ -1,13 +1,14 @@
 import './App.css'
 import { useDojo } from './DojoContext'
-import { useComponentValue } from '@dojoengine/react'
+// import { useComponentValue } from '@latticexyz/react'
+import { useComponentValue } from '@latticexyz/react'
 import { EntityIndex, setComponent } from '@latticexyz/recs'
 import { useEffect } from 'react'
-import { getFirstComponentByType } from './utils'
 import { Attributes, Position, Counter } from './generated/graphql'
 import './xyz/PhaserGame'
 import Phaser from 'phaser'
 import config from './xyz/PhaserGame'
+import { getEntityIdFromKeys } from '@dojoengine/utils'
 
 function App() {
   const {
@@ -20,16 +21,15 @@ function App() {
   } = useDojo()
 
   // entity id - this example uses the account address as the entity id
-  const entityId = account.address
-  console.log(entityId)
+  const player = account.address
 
   // get current component values
   const counter = useComponentValue(
     Counter,
-    parseInt(entityId.toString()) as EntityIndex
+    parseInt(player.toString()) as EntityIndex
   )
 
-  // console.log('Counter', counter)
+  console.log('Use Counter value:', counter)
 
   const handleGridClick = (x: number, y: number) => {
     // Do something when grid is clicked
@@ -38,26 +38,51 @@ function App() {
   }
 
   useEffect(() => {
-    if (!entityId) return
+    if (!player) return
 
     const fetchData = async () => {
-      const { data } = await graphSdk.getEntities()
-      console.log('data', data)
+      const { data } = await graphSdk.getCounterForPlayer({ player: player })
+      const questId = data?.counterComponents?.edges?.[0]?.node?.count
 
-      if (data) {
-        let counter = getFirstComponentByType(
-          data.entities?.edges,
-          'Counter'
-        ) as Counter
+      console.log("The current player's quest id:", questId)
 
-        console.log('Counter', counter.count)
-        // setComponent(Moves, parseInt(entityId.toString()) as EntityIndex, {
-        //   remaining: remaining.remaining,
-        // })
-        // setComponent(Position, parseInt(entityId.toString()) as EntityIndex, {
-        //   x: position.x,
-        //   y: position.y,
-        // })
+      if (questId) {
+        const { data } = await graphSdk.getAttributesForPlayer({
+          player: player,
+          questId: questId,
+          entityId: 0,
+        })
+
+        console.log(data?.attributesComponents?.edges?.[0]?.node)
+
+        const keys = [parseInt(player.toString()), questId, 0]
+        setComponent(Attributes, getEntityIdFromKeys(keys) as EntityIndex, {
+          player: 1,
+          quest_id: 1,
+          entity_id: 1,
+          points: 100,
+          str: 10,
+          dex: 10,
+          int: 10,
+          wis: 10,
+          con: 10,
+          cha: 10,
+          str_modifier: 0,
+          dex_modifier: 0,
+          int_modifier: 0,
+          wis_modifier: 0,
+          con_modifier: 0,
+          cha_modifier: 0,
+        })
+
+        setComponent(Moves, parseInt(entityId.toString()) as EntityIndex, {
+          remaining: remaining.remaining,
+        })
+        setComponent(Position, parseInt(entityId.toString()) as EntityIndex, {
+          x: position.x,
+        })
+      } else {
+        // TODO: create a new quest
       }
     }
     fetchData()

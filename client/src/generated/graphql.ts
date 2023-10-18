@@ -645,12 +645,65 @@ export type SystemEdge = {
   node?: Maybe<System>;
 };
 
+export type GetAttributesForPlayerQueryVariables = Exact<{
+  player: Scalars['String']['input'];
+  questId: Scalars['Int']['input'];
+  entityId: Scalars['Int']['input'];
+}>;
+
+
+export type GetAttributesForPlayerQuery = { __typename?: 'Query', attributesComponents?: { __typename?: 'AttributesConnection', edges?: Array<{ __typename?: 'AttributesEdge', node?: { __typename?: 'Attributes', points?: any | null, str?: any | null, dex?: any | null, con?: any | null, int?: any | null, wis?: any | null, cha?: any | null, str_modifier?: any | null, dex_modifier?: any | null, con_modifier?: any | null, int_modifier?: any | null, wis_modifier?: any | null, cha_modifier?: any | null } | null } | null> | null } | null };
+
+export type GetCounterForPlayerQueryVariables = Exact<{
+  player: Scalars['String']['input'];
+}>;
+
+
+export type GetCounterForPlayerQuery = { __typename?: 'Query', counterComponents?: { __typename?: 'CounterConnection', edges?: Array<{ __typename?: 'CounterEdge', node?: { __typename?: 'Counter', player?: any | null, count?: any | null } | null } | null> | null } | null };
+
 export type GetEntitiesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetEntitiesQuery = { __typename?: 'Query', entities?: { __typename?: 'EntityConnection', edges?: Array<{ __typename?: 'EntityEdge', node?: { __typename?: 'Entity', keys?: Array<string | null> | null, components?: Array<{ __typename: 'Attributes', points?: any | null, str?: any | null, dex?: any | null, con?: any | null, int?: any | null, wis?: any | null, cha?: any | null, str_modifier?: any | null, dex_modifier?: any | null, con_modifier?: any | null, int_modifier?: any | null, wis_modifier?: any | null, cha_modifier?: any | null } | { __typename: 'Counter', count?: any | null } | { __typename: 'Position', x?: any | null, y?: any | null } | { __typename: 'Quest', quest_state?: any | null } | { __typename: 'Stats', ac?: any | null, damage_dice?: any | null, hp?: any | null } | null> | null } | null } | null> | null } | null };
 
 
+export const GetAttributesForPlayerDocument = gql`
+    query getAttributesForPlayer($player: String!, $questId: Int!, $entityId: Int!) {
+  attributesComponents(
+    where: {player: $player, quest_id: $questId, entity_id: $entityId}
+  ) {
+    edges {
+      node {
+        points
+        str
+        dex
+        con
+        int
+        wis
+        cha
+        str_modifier
+        dex_modifier
+        con_modifier
+        int_modifier
+        wis_modifier
+        cha_modifier
+      }
+    }
+  }
+}
+    `;
+export const GetCounterForPlayerDocument = gql`
+    query getCounterForPlayer($player: String!) {
+  counterComponents(where: {player: $player}) {
+    edges {
+      node {
+        player
+        count
+      }
+    }
+  }
+}
+    `;
 export const GetEntitiesDocument = gql`
     query getEntities {
   entities(keys: ["%"]) {
@@ -700,9 +753,17 @@ export type SdkFunctionWrapper = <T>(action: (requestHeaders?:Record<string, str
 
 
 const defaultWrapper: SdkFunctionWrapper = (action, _operationName, _operationType) => action();
+const GetAttributesForPlayerDocumentString = print(GetAttributesForPlayerDocument);
+const GetCounterForPlayerDocumentString = print(GetCounterForPlayerDocument);
 const GetEntitiesDocumentString = print(GetEntitiesDocument);
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
+    getAttributesForPlayer(variables: GetAttributesForPlayerQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetAttributesForPlayerQuery; extensions?: any; headers: Dom.Headers; status: number; }> {
+        return withWrapper((wrappedRequestHeaders) => client.rawRequest<GetAttributesForPlayerQuery>(GetAttributesForPlayerDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'getAttributesForPlayer', 'query');
+    },
+    getCounterForPlayer(variables: GetCounterForPlayerQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetCounterForPlayerQuery; extensions?: any; headers: Dom.Headers; status: number; }> {
+        return withWrapper((wrappedRequestHeaders) => client.rawRequest<GetCounterForPlayerQuery>(GetCounterForPlayerDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'getCounterForPlayer', 'query');
+    },
     getEntities(variables?: GetEntitiesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetEntitiesQuery; extensions?: any; headers: Dom.Headers; status: number; }> {
         return withWrapper((wrappedRequestHeaders) => client.rawRequest<GetEntitiesQuery>(GetEntitiesDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'getEntities', 'query');
     }
