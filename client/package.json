@@ -9,15 +9,16 @@
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "codegen": "graphql-codegen",
-    "components": "npx @dojoengine/core ../dojo/target/dev/manifest.json src/dojo/contractComponents.ts"
+    "create-components": "npx create-components ../dojo/target/dev/manifest.json src/dojo/contractComponents.ts"
   },
   "dependencies": {
-    "@dojoengine/core": "^0.1.26",
-    "@dojoengine/create-burner": "^0.1.27",
-    "@dojoengine/utils": "^0.1.27",
+    "@dojoengine/core": "^0.1.28",
+    "@dojoengine/create-burner": "^0.1.28",
+    "@dojoengine/utils": "^0.1.28",
     "@latticexyz/react": "^1.43.0",
     "@latticexyz/recs": "^1.43.0",
     "@latticexyz/utils": "^1.43.0",
+    "bootstrap": "^5.3.2",
     "easystarjs": "^0.4.4",
     "ethers": "^5.7.2",
     "graphql": "^16.7.1",
@@ -26,6 +27,7 @@
     "phaser": "^3.60.0",
     "proxy-deep": "^3.1.1",
     "react": "^18.2.0",
+    "react-bootstrap": "^2.9.0",
     "react-dom": "^18.2.0",
     "rxjs": "^7.8.1",
     "starknet": "^5.14.1"

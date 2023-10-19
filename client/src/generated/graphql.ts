@@ -661,6 +661,14 @@ export type GetCounterForPlayerQueryVariables = Exact<{
 
 export type GetCounterForPlayerQuery = { __typename?: 'Query', counterComponents?: { __typename?: 'CounterConnection', edges?: Array<{ __typename?: 'CounterEdge', node?: { __typename?: 'Counter', player?: any | null, count?: any | null } | null } | null> | null } | null };
 
+export type GetQuestForPlayerQueryVariables = Exact<{
+  player: Scalars['String']['input'];
+  questId: Scalars['Int']['input'];
+}>;
+
+
+export type GetQuestForPlayerQuery = { __typename?: 'Query', questComponents?: { __typename?: 'QuestConnection', edges?: Array<{ __typename?: 'QuestEdge', node?: { __typename?: 'Quest', quest_state?: any | null } | null } | null> | null } | null };
+
 export type GetEntitiesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -699,6 +707,17 @@ export const GetCounterForPlayerDocument = gql`
       node {
         player
         count
+      }
+    }
+  }
+}
+    `;
+export const GetQuestForPlayerDocument = gql`
+    query getQuestForPlayer($player: String!, $questId: Int!) {
+  questComponents(where: {player: $player, quest_id: $questId}) {
+    edges {
+      node {
+        quest_state
       }
     }
   }
@@ -755,6 +774,7 @@ export type SdkFunctionWrapper = <T>(action: (requestHeaders?:Record<string, str
 const defaultWrapper: SdkFunctionWrapper = (action, _operationName, _operationType) => action();
 const GetAttributesForPlayerDocumentString = print(GetAttributesForPlayerDocument);
 const GetCounterForPlayerDocumentString = print(GetCounterForPlayerDocument);
+const GetQuestForPlayerDocumentString = print(GetQuestForPlayerDocument);
 const GetEntitiesDocumentString = print(GetEntitiesDocument);
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
@@ -763,6 +783,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     getCounterForPlayer(variables: GetCounterForPlayerQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetCounterForPlayerQuery; extensions?: any; headers: Dom.Headers; status: number; }> {
         return withWrapper((wrappedRequestHeaders) => client.rawRequest<GetCounterForPlayerQuery>(GetCounterForPlayerDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'getCounterForPlayer', 'query');
+    },
+    getQuestForPlayer(variables: GetQuestForPlayerQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetQuestForPlayerQuery; extensions?: any; headers: Dom.Headers; status: number; }> {
+        return withWrapper((wrappedRequestHeaders) => client.rawRequest<GetQuestForPlayerQuery>(GetQuestForPlayerDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'getQuestForPlayer', 'query');
     },
     getEntities(variables?: GetEntitiesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetEntitiesQuery; extensions?: any; headers: Dom.Headers; status: number; }> {
         return withWrapper((wrappedRequestHeaders) => client.rawRequest<GetEntitiesQuery>(GetEntitiesDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'getEntities', 'query');

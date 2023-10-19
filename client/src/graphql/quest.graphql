@@ -1,0 +1,9 @@
+query getQuestForPlayer($player: String!, $questId: Int!) {
+  questComponents(where: { player: $player, quest_id: $questId }) {
+    edges {
+      node {
+        quest_state
+      }
+    }
+  }
+}

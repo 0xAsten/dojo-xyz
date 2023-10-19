@@ -1,20 +1,25 @@
 import './App.css'
 import { useDojo } from './DojoContext'
-// import { useComponentValue } from '@latticexyz/react'
 import { useComponentValue } from '@latticexyz/react'
 import { EntityIndex, setComponent } from '@latticexyz/recs'
-import { useEffect } from 'react'
-import { Attributes, Position, Counter } from './generated/graphql'
+import { useEffect, useState } from 'react'
+// import { Attributes, Position, Counter } from './generated/graphql'
 import './xyz/PhaserGame'
 import Phaser from 'phaser'
 import config from './xyz/PhaserGame'
 import { getEntityIdFromKeys } from '@dojoengine/utils'
+import 'bootstrap/dist/css/bootstrap.min.css'
+import { Button, Modal, ProgressBar } from 'react-bootstrap'
 
 function App() {
+  const [showModal, setShowModal] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const [message, setMessage] = useState('')
+
   const {
     setup: {
       systemCalls: { spawn },
-      components: { Attributes, Counter },
+      components: { Attributes, Counter, Quest },
       network: { graphSdk, call },
     },
     account: { create, list, select, account, isDeploying },
@@ -29,7 +34,12 @@ function App() {
     parseInt(player.toString()) as EntityIndex
   )
 
-  console.log('Use Counter value:', counter)
+  const keys = [BigInt(player.toString()), BigInt(counter?.count ?? 0)]
+
+  const quest = useComponentValue(
+    Quest,
+    getEntityIdFromKeys(keys) as EntityIndex
+  )
 
   const handleGridClick = (x: number, y: number) => {
     // Do something when grid is clicked
@@ -37,66 +47,110 @@ function App() {
     spawn(account)
   }
 
+  const handleStartGame = async () => {
+    setShowModal(true)
+    setMessage('Starting...')
+    setProgress(30)
+    await spawn(account)
+    // Fake progress updates (replace this with real progress if possible)
+    for (let i = 4; i <= 10; i++) {
+      setProgress(i * 10)
+      await new Promise((r) => setTimeout(r, 1)) // simulate delay
+    }
+    setShowModal(false)
+    setProgress(0)
+  }
+
+  async function fetchDataAndProgress() {
+    const { data: counterData } = await graphSdk.getCounterForPlayer({
+      player: player,
+    })
+
+    const questId = counterData?.counterComponents?.edges?.[0]?.node?.count
+    console.log("The current player's quest id:", questId)
+
+    if (questId) {
+      setComponent(Counter, parseInt(player.toString()) as EntityIndex, {
+        player: parseInt(player.toString()),
+        count: questId,
+      })
+
+      const { data: questdata } = await graphSdk.getQuestForPlayer({
+        player: player,
+        questId: questId,
+      })
+      const questState =
+        questdata?.questComponents?.edges?.[0]?.node?.quest_state
+
+      setComponent(Quest, parseInt(player.toString()) as EntityIndex, {
+        player: parseInt(player.toString()),
+        quest_id: questId,
+        quest_state: questState,
+      })
+    }
+  }
+
   useEffect(() => {
     if (!player) return
 
-    const fetchData = async () => {
-      const { data } = await graphSdk.getCounterForPlayer({ player: player })
-      const questId = data?.counterComponents?.edges?.[0]?.node?.count
+    fetchDataAndProgress()
+  }, [account.address])
 
-      console.log("The current player's quest id:", questId)
-
-      if (questId) {
-        const { data } = await graphSdk.getAttributesForPlayer({
-          player: player,
-          questId: questId,
-          entityId: 0,
-        })
-
-        console.log(data?.attributesComponents?.edges?.[0]?.node)
-
-        const keys = [parseInt(player.toString()), questId, 0]
-        setComponent(Attributes, getEntityIdFromKeys(keys) as EntityIndex, {
-          player: 1,
-          quest_id: 1,
-          entity_id: 1,
-          points: 100,
-          str: 10,
-          dex: 10,
-          int: 10,
-          wis: 10,
-          con: 10,
-          cha: 10,
-          str_modifier: 0,
-          dex_modifier: 0,
-          int_modifier: 0,
-          wis_modifier: 0,
-          con_modifier: 0,
-          cha_modifier: 0,
-        })
-
-        setComponent(Moves, parseInt(entityId.toString()) as EntityIndex, {
-          remaining: remaining.remaining,
-        })
-        setComponent(Position, parseInt(entityId.toString()) as EntityIndex, {
-          x: position.x,
-        })
+  useEffect(() => {
+    if (quest) {
+      if (quest.quest_state === 2) {
+        setMessage(
+          'Quest is already completed. Do you want to restart a new game?'
+        )
+        setShowModal(true)
       } else {
-        // TODO: create a new quest
+        setShowModal(false)
       }
+    } else {
+      setMessage('No active quest found. Do you want to start the game?')
+      setShowModal(true)
     }
-    fetchData()
+  }, [quest])
 
+  useEffect(() => {
     const game = new Phaser.Game(config)
     game.scene.start('bootstrap', { onGridClick: handleGridClick })
 
     return () => game.destroy(true)
-  }, [account.address])
+  })
 
   return (
     <>
       <div>{counter?.count}</div>
+      <div>{quest?.quest_state}</div>
       <div id='phaser-container' className='App'></div>
+
+      <Modal show={showModal} backdrop='static' keyboard={false}>
+        <Modal.Header>
+          <Modal.Title>Game Alert</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {progress > 0 ? (
+            <ProgressBar now={progress} label={`${progress}%`} />
+          ) : (
+            message
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          {progress === 0 && (
+            <>
+              <Button
+                variant='primary'
+                onClick={() => {
+                  handleStartGame()
+                }}
+              >
+                Confirm
+              </Button>
+            </>
+          )}
+        </Modal.Footer>
+      </Modal>
     </>
   )
 }
