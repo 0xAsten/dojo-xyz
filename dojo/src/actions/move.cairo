@@ -1,4 +1,4 @@
-#[system]
+#[dojo::contract]
 mod move_system {
     use core::option::OptionTrait;
     use array::ArrayTrait;

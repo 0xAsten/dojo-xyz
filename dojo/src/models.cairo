@@ -1,7 +1,11 @@
 use array::ArrayTrait;
 use starknet::ContractAddress;
+use dojo::database::schema::{
+    Enum, Member, Ty, Struct, SchemaIntrospection, serialize_member, serialize_member_type
+};
+use core::debug::PrintTrait;
 
-#[derive(Component, Copy, Drop, Serde, SerdeLen)]
+#[derive(Model, Copy, Drop, Serde)]
 struct Attributes {
     #[key]
     player: ContractAddress,
@@ -24,7 +28,7 @@ struct Attributes {
     cha_modifier: u32
 }
 
-#[derive(Component, Copy, Drop, Serde, SerdeLen)]
+#[derive(Model, Copy, Drop, Serde)]
 struct Stats {
     #[key]
     player: ContractAddress,
@@ -32,12 +36,12 @@ struct Stats {
     quest_id: u32,
     #[key]
     entity_id: u32,
-    ac: u32, // Armor Class
+    ac: u32,
     damage_dice: u32,
-    hp: u32 // Hit Points
+    hp: u32
 }
 
-#[derive(Component, Copy, Drop, Serde, SerdeLen)]
+#[derive(Model, Copy, Drop, Serde)]
 struct Position {
     #[key]
     player: ContractAddress,
@@ -49,21 +53,14 @@ struct Position {
     y: u32
 }
 
-#[derive(Component, Copy, Drop, Serde, SerdeLen)]
+#[derive(Model, Copy, Drop, Serde)]
 struct Counter {
     #[key]
     player: ContractAddress,
     count: u32,
 }
 
-// #[derive(Serde, Drop, Copy, PartialEq)]
-// enum GameStates {
-//     GameInit,
-//     GameRunning,
-//     GameOver
-// }
-
-#[derive(Component, Copy, Drop, Serde, SerdeLen)]
+#[derive(Model, Copy, Drop, Serde)]
 struct Quest {
     #[key]
     player: ContractAddress,
@@ -72,19 +69,6 @@ struct Quest {
     // 0 - GameInit, 1 - GameRunning, 2 - GameOver
     quest_state: u32,
 }
-
-// //Assigning storage types for enum
-// impl QuestOptionStateStorageSize of dojo::StorageSize<GameStates> {
-//     #[inline(always)]
-//     fn unpacked_size() -> usize {
-//         1
-//     }
-
-//     #[inline(always)]
-//     fn packed_size() -> usize {
-//         256
-//     }
-// }
 
 trait PositionTrait {
     fn is_zero(self: Position) -> bool;
