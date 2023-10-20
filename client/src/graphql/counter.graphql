@@ -1,8 +1,7 @@
-query getCounterForPlayer($player: String!) {
-  counterComponents(where: { player: $player }) {
+query getCounterForPlayer($player: ContractAddress!) {
+  counterModels(where: { player: $player }) {
     edges {
       node {
-        player
         count
       }
     }

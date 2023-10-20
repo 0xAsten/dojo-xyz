@@ -3,37 +3,11 @@ query getEntities {
     edges {
       node {
         keys
-        components {
+        models {
           __typename
-          ... on Attributes {
-            points
-            str
-            dex
-            con
-            int
-            wis
-            cha
-            str_modifier
-            dex_modifier
-            con_modifier
-            int_modifier
-            wis_modifier
-            cha_modifier
-          }
-          ... on Stats {
-            ac
-            damage_dice
-            hp
-          }
           ... on Position {
             x
             y
-          }
-          ... on Counter {
-            count
-          }
-          ... on Quest {
-            quest_state
           }
         }
       }

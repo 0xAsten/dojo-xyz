@@ -1,5 +1,5 @@
-query getQuestForPlayer($player: String!, $questId: Int!) {
-  questComponents(where: { player: $player, quest_id: $questId }) {
+query getQuestForPlayer($player: ContractAddress!, $questId: u32!) {
+  questModels(where: { player: $player, quest_id: $questId }) {
     edges {
       node {
         quest_state
