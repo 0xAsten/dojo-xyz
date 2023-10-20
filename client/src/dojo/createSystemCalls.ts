@@ -38,7 +38,7 @@ export function createSystemCalls(
     const cha = 0
 
     try {
-      const tx = await execute(signer, 'spawn_system', [
+      const tx = await execute(signer, 'actions', 'spawn', [
         str,
         dex,
         con,

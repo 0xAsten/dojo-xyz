@@ -20,13 +20,15 @@ function App() {
     setup: {
       systemCalls: { spawn },
       components: { Attributes, Counter, Quest },
-      network: { graphSdk, call },
+      network: { graphSdk, contractComponents },
     },
     account: { create, list, select, account, isDeploying },
   } = useDojo()
 
   // entity id - this example uses the account address as the entity id
   const player = account.address
+
+  const { getCounterForPlayer, getQuestForPlayer } = graphSdk()
 
   // get current component values
   const counter = useComponentValue(
@@ -62,7 +64,7 @@ function App() {
   }
 
   async function fetchDataAndProgress() {
-    const { data: counterData } = await graphSdk.getCounterForPlayer({
+    const { data: counterData } = await getCounterForPlayer({
       player: player,
     })
 
@@ -75,7 +77,7 @@ function App() {
         count: questId,
       })
 
-      const { data: questdata } = await graphSdk.getQuestForPlayer({
+      const { data: questdata } = await getQuestForPlayer({
         player: player,
         questId: questId,
       })

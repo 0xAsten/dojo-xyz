@@ -521,27 +521,27 @@
     "@babel/helper-validator-identifier" "^7.22.20"
     to-fast-properties "^2.0.0"
 
-"@dojoengine/core@^0.1.28":
-  version "0.1.28"
-  resolved "https://registry.yarnpkg.com/@dojoengine/core/-/core-0.1.28.tgz#d71df1e913f6978733c4174e388642c6d1217c86"
-  integrity sha512-nNYxRT9YPK8wRdoAQCdEkkcSAdxRSVvpbYCsLO3gT8lI9a4yDke8DwhDGUnwxpOj2Wg7o0+L4IEHDjf4smC1Ng==
+"@dojoengine/core@^0.1.29":
+  version "0.1.29"
+  resolved "https://registry.yarnpkg.com/@dojoengine/core/-/core-0.1.29.tgz#1762d7cfe0a882aedd472df0a15fb90f47961027"
+  integrity sha512-KbC4PZUhJASkn4dzf1a8uHJvVvnHh/EsnrpY7wUUOV4QOqedgHf6ar4Jxdkba2bSuNjuNwiGvh6f+3crqZ4tMA==
   dependencies:
     starknet "^5.19.5"
 
-"@dojoengine/create-burner@^0.1.28":
-  version "0.1.28"
-  resolved "https://registry.yarnpkg.com/@dojoengine/create-burner/-/create-burner-0.1.28.tgz#eab805056b140992d0c8d861ebdb7fb3814e7a46"
-  integrity sha512-LRVsS9wzKIvnbDNsTJ9ut5VuLELC5l7rhr6BcHQFpC/ByHLugPNW/XWdoIKbyx+fS2w2nRSjNJ63c+DoY+6UGQ==
+"@dojoengine/create-burner@^0.1.29":
+  version "0.1.29"
+  resolved "https://registry.yarnpkg.com/@dojoengine/create-burner/-/create-burner-0.1.29.tgz#1d00b340b124ef458879d6ed41307a00bfcffa4a"
+  integrity sha512-HR6aW7dTh0dniBp49tbNH/Kl6Qly+pbiKO47B1l0Yb/SZn96LhMxMDYlwjLJhb7JE6HR8dBhjHjZ5VbSIee/Sw==
   dependencies:
     "@starknet-react/core" "^1.0.3"
     encoding "^0.1.13"
     get-starknet-core "^3.2.0"
     js-cookie "^3.0.5"
 
-"@dojoengine/utils@^0.1.28":
-  version "0.1.28"
-  resolved "https://registry.yarnpkg.com/@dojoengine/utils/-/utils-0.1.28.tgz#98a3ebece830373e9fcd82e0d2863e83158e2bec"
-  integrity sha512-vJraPBUEQHguzWZvbAhpN1P69mUsKGjkVPuirJ4tJw70ilTHyEqPSlH1/AqTvtHtTt8gePuTVmIopsoFcLz8gg==
+"@dojoengine/utils@^0.1.29":
+  version "0.1.29"
+  resolved "https://registry.yarnpkg.com/@dojoengine/utils/-/utils-0.1.29.tgz#e224f618221db8094acf91cb937ec0f26e61954c"
+  integrity sha512-+jlOnjRSf9GezTlNowbj0Wf+Sjk6qpN9dzuEVP/cLKtHshEFgwDWRcs1XqWriGRshK7beZtOgJmvLTx6lx12HA==
   dependencies:
     "@latticexyz/recs" "^2.0.0-next.11"
     "@latticexyz/utils" "^2.0.0-next.11"
