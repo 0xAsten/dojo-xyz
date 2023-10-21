@@ -2,6 +2,7 @@ import './App.css'
 import { useDojo } from './DojoContext'
 import { useComponentValue } from '@latticexyz/react'
 import { EntityIndex, setComponent } from '@latticexyz/recs'
+import { Entity } from '@latticexyz/recs'
 import { useEffect, useState } from 'react'
 // import { Attributes, Position, Counter } from './generated/graphql'
 import './xyz/PhaserGame'
@@ -15,6 +16,7 @@ function App() {
   const [showModal, setShowModal] = useState(false)
   const [progress, setProgress] = useState(0)
   const [message, setMessage] = useState('')
+  const [questId, setQuestId] = useState(0)
 
   const {
     setup: {
@@ -25,22 +27,19 @@ function App() {
     account: { create, list, select, account, isDeploying },
   } = useDojo()
 
-  // entity id - this example uses the account address as the entity id
-  const player = account.address
-
-  const { getCounterForPlayer, getQuestForPlayer } = graphSdk()
-
   // get current component values
   const counter = useComponentValue(
     Counter,
-    parseInt(player.toString()) as EntityIndex
+    account.address.toString() as Entity
   )
-
-  const keys = [BigInt(player.toString()), BigInt(counter?.count ?? 0)]
+  console.log('counter', counter)
 
   const quest = useComponentValue(
     Quest,
-    getEntityIdFromKeys(keys) as EntityIndex
+    getEntityIdFromKeys([
+      BigInt(account.address.toString()),
+      BigInt(questId),
+    ]) as EntityIndex
   )
 
   const handleGridClick = (x: number, y: number) => {
@@ -63,37 +62,44 @@ function App() {
     setProgress(0)
   }
 
+  const { getCounterForPlayer, getQuestForPlayer } = graphSdk()
   async function fetchDataAndProgress() {
     const { data: counterData } = await getCounterForPlayer({
-      player: player,
+      player: account.address,
     })
 
-    const questId = counterData?.counterComponents?.edges?.[0]?.node?.count
-    console.log("The current player's quest id:", questId)
+    const count = counterData?.counterModels?.edges?.[0]?.node?.count
+    console.log("The current player's quest id:", count)
 
-    if (questId) {
-      setComponent(Counter, parseInt(player.toString()) as EntityIndex, {
-        player: parseInt(player.toString()),
-        count: questId,
-      })
+    if (count) {
+      setQuestId(count)
+
+      setComponent(
+        Counter,
+        parseInt(account.address.toString()) as EntityIndex,
+        {
+          count: count,
+        }
+      )
 
       const { data: questdata } = await getQuestForPlayer({
-        player: player,
-        questId: questId,
+        player: account.address,
+        questId: count,
       })
-      const questState =
-        questdata?.questComponents?.edges?.[0]?.node?.quest_state
+      const questState = questdata?.questModels?.edges?.[0]?.node?.quest_state
 
-      setComponent(Quest, parseInt(player.toString()) as EntityIndex, {
-        player: parseInt(player.toString()),
-        quest_id: questId,
+      const questKeys = getEntityIdFromKeys([
+        BigInt(account.address.toString()),
+        count,
+      ])
+      setComponent(Quest, questKeys as EntityIndex, {
         quest_state: questState,
       })
     }
   }
 
   useEffect(() => {
-    if (!player) return
+    if (!account.address) return
 
     fetchDataAndProgress()
   }, [account.address])
