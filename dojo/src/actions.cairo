@@ -1,4 +1,3 @@
-
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
 use dojo_xyz::models::{Attributes, Position, Stats, Quest, PositionTrait, Counter};
 use starknet::{ContractAddress, ClassHash};
@@ -7,6 +6,7 @@ use starknet::{ContractAddress, ClassHash};
 trait IActions<TContractState> {
     fn spawn(self: @TContractState, str: u32, dex: u32, con: u32, int: u32, wis: u32, cha: u32);
     fn move(self: @TContractState, x: u32, y: u32);
+    fn attack(self: @TContractState);
 }
 
 #[dojo::contract]
@@ -138,8 +138,7 @@ mod actions {
                 })
             );
             set!(
-                world,
-                (Position { player: player, quest_id: quest_id, entity_id: 0, x: 0, y: 0 })
+                world, (Position { player: player, quest_id: quest_id, entity_id: 0, x: 0, y: 0 })
             );
             set!(world, (Quest { player: player, quest_id: quest_id, quest_state: 1 }));
             set!(world, (counter));
@@ -231,7 +230,8 @@ mod actions {
 
                 let (is_hit, roll) = is_hit(attributes_goblin.str_modifier, stats_player.ac);
                 if is_hit {
-                    let mut damage = roll(stats_goblin.damage_dice) + attributes_goblin.str_modifier;
+                    let mut damage = roll(stats_goblin.damage_dice)
+                        + attributes_goblin.str_modifier;
                     if roll == 20 {
                         damage += roll(stats_goblin.damage_dice) + attributes_goblin.str_modifier;
                     }
@@ -247,7 +247,68 @@ mod actions {
                 }
             }
         }
-        
+
+        fn attack(self: @ContractState) {
+            let world = self.world_dispatcher.read();
+
+            let player = get_caller_address();
+
+            let counter = get!(world, player, (Counter));
+            let count = counter.count;
+
+            let mut quest = get!(world, (player, count), (Quest));
+            let quest_id = count;
+            let quest_state = quest.quest_state;
+            assert(quest_state == 1, 'Quest stats error');
+
+            let mut position_player = get!(world, (player, quest_id, 0), (Position));
+            let mut position_goblin = get!(world, (player, quest_id, 1), (Position));
+
+            assert(
+                position_player.is_neighbor(Option::Some((position_goblin.x, position_goblin.y))),
+                'Not near'
+            );
+
+            // atack
+            let mut stats_player = get!(world, (player, quest_id, 0), (Stats));
+            let mut stats_goblin = get!(world, (player, quest_id, 1), (Stats));
+            let attributes_player = get!(world, (player, quest_id, 0), (Attributes));
+            let attributes_goblin = get!(world, (player, quest_id, 1), (Attributes));
+
+            let (is_hit, roll) = is_hit(attributes_player.str_modifier, stats_goblin.ac);
+            if is_hit {
+                let mut damage = roll(stats_player.damage_dice) + attributes_player.str_modifier;
+                if roll == 20 {
+                    damage += roll(stats_player.damage_dice) + attributes_player.str_modifier;
+                }
+                stats_goblin.hp -= damage;
+                set!(world, (stats_goblin));
+
+                if stats_goblin.hp <= 1000 {
+                    // goblin dead
+                    quest.quest_state = 2;
+                    set!(world, (quest));
+                    return ();
+                }
+            }
+
+            let (is_hit, roll) = is_hit(attributes_goblin.str_modifier, stats_player.ac);
+            if is_hit {
+                let mut damage = roll(stats_goblin.damage_dice) + attributes_goblin.str_modifier;
+                if roll == 20 {
+                    damage += roll(stats_goblin.damage_dice) + attributes_goblin.str_modifier;
+                }
+                stats_player.hp -= damage;
+                set!(world, (stats_player));
+
+                if stats_player.hp <= 1000 {
+                    // player dead
+                    quest.quest_state = 2;
+                    set!(world, (quest));
+                    return ();
+                }
+            }
+        }
     }
 }
 
@@ -263,7 +324,7 @@ mod tests {
     use dojo::test_utils::{spawn_test_world, deploy_contract};
 
     // import models
-    use dojo_xyz::models::{attributes, position, stats,quest, counter};
+    use dojo_xyz::models::{attributes, position, stats, quest, counter};
     use dojo_xyz::models::{Attributes, Position, Stats, Quest, Counter};
 
     // import actions
@@ -277,7 +338,7 @@ mod tests {
         let palyer = starknet::contract_address_const::<0x0>();
 
         let mut models = array![
-            attributes::TEST_CLASS_HASH, 
+            attributes::TEST_CLASS_HASH,
             position::TEST_CLASS_HASH,
             stats::TEST_CLASS_HASH,
             quest::TEST_CLASS_HASH,
@@ -323,7 +384,7 @@ mod tests {
         let palyer = starknet::contract_address_const::<0x0>();
 
         let mut models = array![
-            attributes::TEST_CLASS_HASH, 
+            attributes::TEST_CLASS_HASH,
             position::TEST_CLASS_HASH,
             stats::TEST_CLASS_HASH,
             quest::TEST_CLASS_HASH,
@@ -439,5 +500,4 @@ mod tests {
         let stats = get!(world, (palyer, count, 0), (Stats));
         stats.hp.print();
     }
-
 }
