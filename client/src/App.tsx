@@ -11,6 +11,7 @@ import config from './xyz/PhaserGame'
 import { getEntityIdFromKeys } from '@dojoengine/utils'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import { Button, Modal, ProgressBar } from 'react-bootstrap'
+import { setComponentFromGraphQLEntity } from '@dojoengine/utils'
 
 function App() {
   const [showModal, setShowModal] = useState(false)
@@ -65,7 +66,7 @@ function App() {
   const { getCounterForPlayer, getQuestForPlayer } = graphSdk()
   async function fetchDataAndProgress() {
     const { data: counterData } = await getCounterForPlayer({
-      player: account.address,
+      player: account,
     })
 
     const count = counterData?.counterModels?.edges?.[0]?.node?.count
@@ -75,8 +76,8 @@ function App() {
       setQuestId(count)
 
       setComponent(
-        Counter,
-        parseInt(account.address.toString()) as EntityIndex,
+        contractComponents.Counter,
+        getEntityIdFromKeys([BigInt(account.address.toString())]),
         {
           count: count,
         }
@@ -90,9 +91,9 @@ function App() {
 
       const questKeys = getEntityIdFromKeys([
         BigInt(account.address.toString()),
-        count,
+        BigInt(count),
       ])
-      setComponent(Quest, questKeys as EntityIndex, {
+      setComponent(contractComponents.Quest, questKeys as EntityIndex, {
         quest_state: questState,
       })
     }
@@ -100,14 +101,6 @@ function App() {
 
   useEffect(() => {
     if (!account.address) return
-
-    async function fetchData() {
-      console.log('account address', account.address)
-      console.log('master address', masterAccount.address)
-      const nonce = await masterAccount?.getNonce()
-      console.log('nonce', nonce)
-    }
-    fetchData()
 
     fetchDataAndProgress()
   }, [account.address])
