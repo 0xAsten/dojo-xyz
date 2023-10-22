@@ -11,7 +11,6 @@ import config from './xyz/PhaserGame'
 import { getEntityIdFromKeys } from '@dojoengine/utils'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import { Button, Modal, ProgressBar } from 'react-bootstrap'
-import { setComponentFromGraphQLEntity } from '@dojoengine/utils'
 
 function App() {
   const [showModal, setShowModal] = useState(false)
@@ -42,6 +41,7 @@ function App() {
       BigInt(questId),
     ]) as EntityIndex
   )
+  console.log('quest', quest)
 
   const handleGridClick = (x: number, y: number) => {
     // Do something when grid is clicked
@@ -84,7 +84,7 @@ function App() {
       )
 
       const { data: questdata } = await getQuestForPlayer({
-        player: account.address,
+        player: account,
         questId: count,
       })
       const questState = questdata?.questModels?.edges?.[0]?.node?.quest_state
