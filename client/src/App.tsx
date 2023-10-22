@@ -24,7 +24,7 @@ function App() {
       components: { Attributes, Counter, Quest },
       network: { graphSdk, contractComponents },
     },
-    account: { create, list, select, account, isDeploying },
+    account: { create, list, select, account, masterAccount, isDeploying },
   } = useDojo()
 
   // get current component values
@@ -100,6 +100,14 @@ function App() {
 
   useEffect(() => {
     if (!account.address) return
+
+    async function fetchData() {
+      console.log('account address', account.address)
+      console.log('master address', masterAccount.address)
+      const nonce = await masterAccount?.getNonce()
+      console.log('nonce', nonce)
+    }
+    fetchData()
 
     fetchDataAndProgress()
   }, [account.address])
