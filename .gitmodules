@@ -1,0 +1,3 @@
+[submodule "dojo"]
+	path = dojo
+	url = git@github.com-0xAsten:0xAsten/dojo-quest.git
