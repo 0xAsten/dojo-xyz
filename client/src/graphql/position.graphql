@@ -1,0 +1,16 @@
+query getPositionForPlayer(
+  $player: ContractAddress!
+  $questId: u32!
+  $entityId: u32!
+) {
+  positionModels(
+    where: { player: $player, quest_id: $questId, entity_id: $entityId }
+  ) {
+    edges {
+      node {
+        x
+        y
+      }
+    }
+  }
+}

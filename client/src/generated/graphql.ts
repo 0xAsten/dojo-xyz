@@ -784,6 +784,15 @@ export type GetCounterForPlayerQueryVariables = Exact<{
 
 export type GetCounterForPlayerQuery = { __typename?: 'Query', counterModels?: { __typename?: 'CounterConnection', edges?: Array<{ __typename?: 'CounterEdge', node?: { __typename?: 'Counter', count?: any | null } | null } | null> | null } | null };
 
+export type GetPositionForPlayerQueryVariables = Exact<{
+  player: Scalars['ContractAddress']['input'];
+  questId: Scalars['u32']['input'];
+  entityId: Scalars['u32']['input'];
+}>;
+
+
+export type GetPositionForPlayerQuery = { __typename?: 'Query', positionModels?: { __typename?: 'PositionConnection', edges?: Array<{ __typename?: 'PositionEdge', node?: { __typename?: 'Position', x?: any | null, y?: any | null } | null } | null> | null } | null };
+
 export type GetQuestForPlayerQueryVariables = Exact<{
   player: Scalars['ContractAddress']['input'];
   questId: Scalars['u32']['input'];
@@ -796,6 +805,15 @@ export type GetEntitiesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetEntitiesQuery = { __typename?: 'Query', entities?: { __typename?: 'EntityConnection', edges?: Array<{ __typename?: 'EntityEdge', node?: { __typename?: 'Entity', keys?: Array<string | null> | null, models?: Array<{ __typename: 'Attributes' } | { __typename: 'Counter' } | { __typename: 'Position', x?: any | null, y?: any | null } | { __typename: 'Quest' } | { __typename: 'Stats' } | null> | null } | null } | null> | null } | null };
+
+export type GetStatsForPlayerQueryVariables = Exact<{
+  player: Scalars['ContractAddress']['input'];
+  questId: Scalars['u32']['input'];
+  entityId: Scalars['u32']['input'];
+}>;
+
+
+export type GetStatsForPlayerQuery = { __typename?: 'Query', statsModels?: { __typename?: 'StatsConnection', edges?: Array<{ __typename?: 'StatsEdge', node?: { __typename?: 'Stats', ac?: any | null, damage_dice?: any | null, hp?: any | null } | null } | null> | null } | null };
 
 
 export const GetAttributesForPlayerDocument = gql`
@@ -834,6 +852,20 @@ export const GetCounterForPlayerDocument = gql`
   }
 }
     `;
+export const GetPositionForPlayerDocument = gql`
+    query getPositionForPlayer($player: ContractAddress!, $questId: u32!, $entityId: u32!) {
+  positionModels(
+    where: {player: $player, quest_id: $questId, entity_id: $entityId}
+  ) {
+    edges {
+      node {
+        x
+        y
+      }
+    }
+  }
+}
+    `;
 export const GetQuestForPlayerDocument = gql`
     query getQuestForPlayer($player: ContractAddress!, $questId: u32!) {
   questModels(where: {player: $player, quest_id: $questId}) {
@@ -863,6 +895,19 @@ export const GetEntitiesDocument = gql`
   }
 }
     `;
+export const GetStatsForPlayerDocument = gql`
+    query getStatsForPlayer($player: ContractAddress!, $questId: u32!, $entityId: u32!) {
+  statsModels(where: {player: $player, quest_id: $questId, entity_id: $entityId}) {
+    edges {
+      node {
+        ac
+        damage_dice
+        hp
+      }
+    }
+  }
+}
+    `;
 
 export type SdkFunctionWrapper = <T>(action: (requestHeaders?:Record<string, string>) => Promise<T>, operationName: string, operationType?: string) => Promise<T>;
 
@@ -870,8 +915,10 @@ export type SdkFunctionWrapper = <T>(action: (requestHeaders?:Record<string, str
 const defaultWrapper: SdkFunctionWrapper = (action, _operationName, _operationType) => action();
 const GetAttributesForPlayerDocumentString = print(GetAttributesForPlayerDocument);
 const GetCounterForPlayerDocumentString = print(GetCounterForPlayerDocument);
+const GetPositionForPlayerDocumentString = print(GetPositionForPlayerDocument);
 const GetQuestForPlayerDocumentString = print(GetQuestForPlayerDocument);
 const GetEntitiesDocumentString = print(GetEntitiesDocument);
+const GetStatsForPlayerDocumentString = print(GetStatsForPlayerDocument);
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
     getAttributesForPlayer(variables: GetAttributesForPlayerQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetAttributesForPlayerQuery; extensions?: any; headers: Dom.Headers; status: number; }> {
@@ -880,11 +927,17 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     getCounterForPlayer(variables: GetCounterForPlayerQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetCounterForPlayerQuery; extensions?: any; headers: Dom.Headers; status: number; }> {
         return withWrapper((wrappedRequestHeaders) => client.rawRequest<GetCounterForPlayerQuery>(GetCounterForPlayerDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'getCounterForPlayer', 'query');
     },
+    getPositionForPlayer(variables: GetPositionForPlayerQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetPositionForPlayerQuery; extensions?: any; headers: Dom.Headers; status: number; }> {
+        return withWrapper((wrappedRequestHeaders) => client.rawRequest<GetPositionForPlayerQuery>(GetPositionForPlayerDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'getPositionForPlayer', 'query');
+    },
     getQuestForPlayer(variables: GetQuestForPlayerQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetQuestForPlayerQuery; extensions?: any; headers: Dom.Headers; status: number; }> {
         return withWrapper((wrappedRequestHeaders) => client.rawRequest<GetQuestForPlayerQuery>(GetQuestForPlayerDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'getQuestForPlayer', 'query');
     },
     getEntities(variables?: GetEntitiesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetEntitiesQuery; extensions?: any; headers: Dom.Headers; status: number; }> {
         return withWrapper((wrappedRequestHeaders) => client.rawRequest<GetEntitiesQuery>(GetEntitiesDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'getEntities', 'query');
+    },
+    getStatsForPlayer(variables: GetStatsForPlayerQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: GetStatsForPlayerQuery; extensions?: any; headers: Dom.Headers; status: number; }> {
+        return withWrapper((wrappedRequestHeaders) => client.rawRequest<GetStatsForPlayerQuery>(GetStatsForPlayerDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'getStatsForPlayer', 'query');
     }
   };
 }

@@ -89,13 +89,15 @@ function App() {
       })
       const questState = questdata?.questModels?.edges?.[0]?.node?.quest_state
 
-      const questKeys = getEntityIdFromKeys([
+      const keys = getEntityIdFromKeys([
         BigInt(account.address.toString()),
         BigInt(count),
       ])
-      setComponent(contractComponents.Quest, questKeys as EntityIndex, {
+      setComponent(contractComponents.Quest, keys as EntityIndex, {
         quest_state: questState,
       })
+
+      const { data: questData } = await get({})
     }
   }
 

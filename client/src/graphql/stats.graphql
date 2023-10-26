@@ -1,0 +1,17 @@
+query getStatsForPlayer(
+  $player: ContractAddress!
+  $questId: u32!
+  $entityId: u32!
+) {
+  statsModels(
+    where: { player: $player, quest_id: $questId, entity_id: $entityId }
+  ) {
+    edges {
+      node {
+        ac
+        damage_dice
+        hp
+      }
+    }
+  }
+}
